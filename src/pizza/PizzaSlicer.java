@@ -1,5 +1,9 @@
 package pizza;
 
+import util.InputData;
+import util.OutputData;
+import util.ProblemDataIO;
+
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -10,22 +14,50 @@ public class PizzaSlicer {
     private static final char MUSHROOM = 'M';
     private static final char TOMATO = 'T';
 
-    public static void main(String... args) {
-        Character[][] pizza = {
-                {'T', 'T', 'T', 'T', 'T'},
-                {'T', 'M', 'M', 'M', 'T'},
-                {'T', 'T', 'T', 'T', 'T'},
-        };
-        Integer minEachIngrid = 1;
-        Integer maxSliceSize = 6;
-        List<Slice> slices = slicePizza(pizza, minEachIngrid, maxSliceSize);
-        for (Slice slice : slices) {
-            System.out.println(slice.toString());
+    static class PizzaInputData implements InputData {
+        char[][] pizza;
+        int minEachIngrid;
+        int maxSliceSize;
+
+        public void setParams(String[] params) {
+            minEachIngrid = Integer.valueOf(params[2]);
+            maxSliceSize = Integer.valueOf(params[3]);
+            int row = Integer.valueOf(params[0]);
+            int column = Integer.valueOf(params[1]);
+            pizza = new char[row][column];
+        }
+
+        private int currRow;
+        @Override
+        public void fillData(String sCurrentLine) {
+            pizza[currRow] = sCurrentLine.toCharArray();
+            currRow++;
         }
     }
 
-    private static List<Slice> slicePizza(Character[][] pizza, Integer minEachIngrid, Integer maxSliceSize) {
-        AbstractQueue<Slice> slicesQuery = new PriorityQueue<>(Comparator.comparingDouble(o -> o.square));
+    static class PizzaOutputData implements OutputData {
+
+        @Override
+        public String getOutput(Object o) {
+            List<Slice> slices = (List<Slice>) o;
+            StringBuilder builder = new StringBuilder(String.valueOf(slices.size()));
+            for (Slice slice : slices) {
+                builder.append(System.lineSeparator()).append(slice.toString());
+            }
+            return builder.toString();
+        }
+
+    }
+
+    public static void main(String... args) {
+        ProblemDataIO dataIO = new ProblemDataIO(new PizzaInputData(), new PizzaOutputData(), "pizza", "big.in");
+        PizzaInputData inputData = (PizzaInputData) dataIO.readData();
+        List<Slice> slices = slicePizza(inputData.pizza, inputData.minEachIngrid, inputData.maxSliceSize);
+        dataIO.writeData(slices);
+    }
+
+    private static List<Slice> slicePizza(char[][] pizza, Integer minEachIngrid, Integer maxSliceSize) {
+        AbstractQueue<Slice> slicesQuery = new PriorityQueue<>(Comparator.comparingInt(o -> o.square));
         List<Slice> slices = new ArrayList<>();
         for (int i = 0; i < pizza.length; ++i) {
             for (int j = 0; j < pizza[0].length; ++j) {
@@ -48,7 +80,7 @@ public class PizzaSlicer {
         return maximizeSlices(slices, pizza, maxSliceSize);
     }
 
-    private static List<Slice> maximizeSlices(List<Slice> slices, Character[][] pizza, Integer maxSliceSize) {
+    private static List<Slice> maximizeSlices(List<Slice> slices, char[][] pizza, Integer maxSliceSize) {
         Queue<Slice> slicesQuery = new LinkedList<>();
         List<Slice> maximizeSlices = new ArrayList<>();
         for (Slice slice : slices) {
@@ -70,7 +102,7 @@ public class PizzaSlicer {
         return maximizeSlices;
     }
 
-    private static void addLargeSlices(Slice slice, Character[][] pizza, Integer maxSliceSize,
+    private static void addLargeSlices(Slice slice, char[][] pizza, Integer maxSliceSize,
                                        Queue<Slice> slicesQuery) {
         Slice sliceLargeRight = new Slice(slice.start, new Point(slice.end.x + 1, slice.end.y));
         Slice sliceLargeBottom = new Slice(slice.start, new Point(slice.end.x, slice.end.y + 1));
@@ -82,13 +114,13 @@ public class PizzaSlicer {
         }
     }
 
-    private static boolean isSlicePossible(Slice slice, Slice prevSlice, Character[][] pizza, Integer maxSliceSize) {
+    private static boolean isSlicePossible(Slice slice, Slice prevSlice, char[][] pizza, Integer maxSliceSize) {
         return slice.end.y >= 0 && slice.end.y < pizza[0].length
                 && slice.end.x >= 0 && slice.end.x < pizza.length
                 && slice.square <= maxSliceSize && isSliceSolid(pizza, slice, prevSlice);
     }
 
-    private static boolean isSliceSolid(Character[][] pizza, Slice slice, Slice prevSlice) {
+    private static boolean isSliceSolid(char[][] pizza, Slice slice, Slice prevSlice) {
         if (slice.end.x == prevSlice.end.x) {
             for (int i = slice.start.x; i <= slice.end.x; ++i) {
                 if (pizza[i][slice.end.y] == CUT_CELL) {
@@ -105,7 +137,7 @@ public class PizzaSlicer {
         return true;
     }
 
-    private static void cutSliceFromPizza(Character[][] pizza, Slice possibleSlice) {
+    private static void cutSliceFromPizza(char[][] pizza, Slice possibleSlice) {
         for (int i = possibleSlice.start.x; i <= possibleSlice.end.x; ++i) {
             for (int j = possibleSlice.start.y; j <= possibleSlice.end.y; ++j) {
                 pizza[i][j] = CUT_CELL;
@@ -113,7 +145,7 @@ public class PizzaSlicer {
         }
     }
 
-    private static boolean isSliceEnoughDeliciousForAs(Slice possibleSlice, Character[][] pizza, Integer minEachIngrid) {
+    private static boolean isSliceEnoughDeliciousForAs(Slice possibleSlice, char[][] pizza, Integer minEachIngrid) {
         int tomatoCount = 0;
         int mushroomCount = 0;
         for (int i = possibleSlice.start.x; i <= possibleSlice.end.x; ++i) {
@@ -137,12 +169,12 @@ public class PizzaSlicer {
     private static class Slice {
         Point start;
         Point end;
-        Double square;
+        int square;
 
         Slice(Point start, Point end) {
             this.start = start;
             this.end = end;
-            square = Math.sqrt(Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2));
+            square = (Math.abs(start.x - end.x) + 1) * (Math.abs(start.y - end.y) + 1);
         }
 
         @Override
