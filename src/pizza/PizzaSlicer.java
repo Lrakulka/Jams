@@ -19,6 +19,7 @@ public class PizzaSlicer {
         int minEachIngrid;
         int maxSliceSize;
 
+        @Override
         public void setParams(String[] params) {
             minEachIngrid = Integer.valueOf(params[2]);
             maxSliceSize = Integer.valueOf(params[3]);
