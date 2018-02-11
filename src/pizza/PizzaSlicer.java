@@ -1,4 +1,4 @@
-package pizza;
+package pizza; // https://en.wikipedia.org/wiki/Java_package
 
 import util.InputData;
 import util.OutputData;
@@ -28,7 +28,7 @@ public class PizzaSlicer {
         }
 
         private int currRow;
-        @Override
+        @Override // https://stackoverflow.com/questions/94361/when-do-you-use-javas-override-annotation-and-why
         public void fillData(String sCurrentLine) {
             pizza[currRow] = sCurrentLine.toCharArray();
             currRow++;
@@ -55,7 +55,7 @@ public class PizzaSlicer {
         List<Slice> slices = slicePizza(inputData.pizza, inputData.minEachIngrid, inputData.maxSliceSize);
         dataIO.writeData(slices);
     }
-
+// the implementation of the List of slices
     private static List<Slice> slicePizza(char[][] pizza, Integer minEachIngrid, Integer maxSliceSize) {
         AbstractQueue<Slice> slicesQuery = new PriorityQueue<>(Comparator.comparingInt(o -> o.square));
         List<Slice> slices = new ArrayList<>();
@@ -68,7 +68,7 @@ public class PizzaSlicer {
                 slicesQuery.add(new Slice(new Point(i, j), new Point(i, j)));
                 do {
                     Slice possibleSlice = slicesQuery.poll();
-                    if (isSliceEnoughDeliciousForAs(possibleSlice, pizza, minEachIngrid)) {
+                    if (isSliceEnoughDeliciousForUs(possibleSlice, pizza, minEachIngrid)) {
                         slices.add(possibleSlice);
                         cutSliceFromPizza(pizza, possibleSlice);
                         break;
@@ -101,7 +101,7 @@ public class PizzaSlicer {
         }
         return maximizeSlices;
     }
-
+// adding more slices
     private static void addLargeSlices(Slice slice, char[][] pizza, Integer maxSliceSize,
                                        Queue<Slice> slicesQuery) {
         Slice sliceLargeRight = new Slice(slice.start, new Point(slice.end.x + 1, slice.end.y));
@@ -113,13 +113,13 @@ public class PizzaSlicer {
             slicesQuery.add(sliceLargeBottom);
         }
     }
-
+// checking whether it is possible to cut a slice out
     private static boolean isSlicePossible(Slice slice, Slice prevSlice, char[][] pizza, Integer maxSliceSize) {
         return slice.end.y >= 0 && slice.end.y < pizza[0].length
                 && slice.end.x >= 0 && slice.end.x < pizza.length
                 && slice.square <= maxSliceSize && isSliceSolid(pizza, slice, prevSlice);
     }
-
+// checking the "all-in-one" condition (rectangular)
     private static boolean isSliceSolid(char[][] pizza, Slice slice, Slice prevSlice) {
         if (slice.end.x == prevSlice.end.x) {
             for (int i = slice.start.x; i <= slice.end.x; ++i) {
@@ -136,7 +136,7 @@ public class PizzaSlicer {
         }
         return true;
     }
-
+// taking a slice from the pizza
     private static void cutSliceFromPizza(char[][] pizza, Slice possibleSlice) {
         for (int i = possibleSlice.start.x; i <= possibleSlice.end.x; ++i) {
             for (int j = possibleSlice.start.y; j <= possibleSlice.end.y; ++j) {
@@ -144,8 +144,8 @@ public class PizzaSlicer {
             }
         }
     }
-
-    private static boolean isSliceEnoughDeliciousForAs(Slice possibleSlice, char[][] pizza, Integer minEachIngrid) {
+// cheking mushrooms and tomatos in the specific slice
+    private static boolean isSliceEnoughDeliciousForUs(Slice possibleSlice, char[][] pizza, Integer minEachIngrid) {
         int tomatoCount = 0;
         int mushroomCount = 0;
         for (int i = possibleSlice.start.x; i <= possibleSlice.end.x; ++i) {
@@ -165,7 +165,7 @@ public class PizzaSlicer {
         }
         return tomatoCount >= minEachIngrid && mushroomCount >= minEachIngrid;
     }
-
+// slice's parameters
     private static class Slice {
         Point start;
         Point end;
