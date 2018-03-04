@@ -1,39 +1,97 @@
 package selfDriving;
 
+import util.InputData;
+import util.OutputData;
+import util.ProblemDataIO;
+
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 public class SelfDrivingRides {
 
-    public static void main(String... args) {
+    static class SelfDrivingInputData implements InputData {
+        int rows;
+        int columns;
+        List<Car> cars;
+        List<Ride> rides;
+        int bonusNumber;
+        int steps;
 
 
+        @Override
+        public void setParams(String[] params) {
+            rows = Integer.valueOf(params[0]);
+            columns = Integer.valueOf(params[1]);
+            cars = new ArrayList<>();
+            for (int i = Integer.valueOf(params[2]); i > 0; --i) {
+                cars.add(new Car());
+            }
+            rides = new ArrayList<>();
+            bonusNumber = Integer.valueOf(params[4]);
+            steps = Integer.valueOf(params[5]);
+        }
+
+        private int rideId;
+        @Override
+        public void fillData(String dataLine) {
+            String[] params = dataLine.split(" ");
+            Ride ride = new Ride(Integer.valueOf(params[0]), Integer.valueOf(params[1]), Integer.valueOf(params[2]),
+                    Integer.valueOf(params[3]), Integer.valueOf(params[4]), Integer.valueOf(params[5]), rideId);
+            rideId++;
+            rides.add(ride);
+        }
     }
 
-    private static void assignCarsToRiders(List<Car> freeCars, List<Ride> rides, int maxSteps) {
+    static class SelfDrivingOutputData implements OutputData {
+
+        @Override
+        public String getOutput(Object data) {
+            List<Car> cars = (List<Car>) data;
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < cars.size(); ++i) {
+                builder.append(cars.get(i).toString()).append(System.lineSeparator());
+            }
+            return builder.toString();
+        }
+    }
+
+    public static void main(String... args) {
+        ProblemDataIO dataIO = new ProblemDataIO(new SelfDrivingInputData(), new SelfDrivingOutputData(), "selfDriving", "e_high_bonus.in");
+        SelfDrivingInputData inputData = (SelfDrivingInputData) dataIO.readData();
+        List<Car> cars = assignCarsToRiders(inputData.cars, inputData.rides, inputData.steps);
+        dataIO.writeData(cars);
+    }
+
+    private static List<Car> assignCarsToRiders(List<Car> freeCars, List<Ride> rides, int maxSteps) {
         List<Car> bookedCars = new ArrayList<>();
 
         for (int step = 0; step < maxSteps; ++step) {
             removeExpiredRide(rides, step);  // delete all rides that expires
 
-            for (Car freeCar : freeCars) {     // loop throws all free cars
+            Iterator<Car> carIterator = freeCars.iterator();
+            while (carIterator.hasNext()) {     // loop throws all free cars
+                Car freeCar = carIterator.next();
                 Ride carRide = getRideForCar(freeCar, step, rides);   // get most appropriate ride for free car
                 if (Objects.nonNull(carRide)) {
-                    bookCar(freeCar, freeCars, bookedCars);            // set ride for the car
+                    bookCar(freeCar, carIterator, bookedCars);            // set ride for the car
                     removeExpiredRide(rides, carRide);
                     assignCar(freeCar, carRide);
                 }
             }
-            for (Car bookCar : bookedCars) {         // loop throws all booked cars
+            Iterator<Car> bookCarIterator = bookedCars.iterator();
+            while (bookCarIterator.hasNext()) {         // loop throws all booked cars
+                Car bookCar = bookCarIterator.next();
                 bookCar.bookingTime--;            // decrease bookingTime
                 if (isCarFree(bookCar)) {           // check if booking time is 0
-                    freeCar(bookCar, freeCars, bookedCars);     // put car to free cars list
+                    freeCar(bookCar, freeCars, bookCarIterator);     // put car to free cars list
                 }
             }
         }
-
+        bookedCars.addAll(freeCars);
+        return bookedCars;
     }
 
     private static Ride getRideForCar(Car car, int step, List<Ride> rides) {
@@ -69,12 +127,12 @@ public class SelfDrivingRides {
         freeCar.bookingTime = ride.actualRideTime;
     }
 
-    private static void bookCar(Car freeCar, List<Car> freeCars, List<Car> bookedCars) {
+    private static void bookCar(Car freeCar, Iterator<Car> freeCars, List<Car> bookedCars) {
         freeCar(freeCar, bookedCars, freeCars);
     }
 
-    private static void freeCar(Car bookCar, List<Car> freeCars, List<Car> bookedCars) {
-        bookedCars.remove(bookCar);
+    private static void freeCar(Car bookCar, List<Car> freeCars, Iterator<Car> bookedCars) {
+        bookedCars.remove();
         freeCars.add(bookCar);
     }
 
@@ -87,7 +145,7 @@ public class SelfDrivingRides {
     }
 
     private static void removeExpiredRide(List<Ride> rides, int step) {
-        rides.removeIf(ride -> ride.endTime >= step);
+        rides.removeIf(ride -> ride.endTime <= step);
     }
 
     private static class Car {
@@ -98,6 +156,14 @@ public class SelfDrivingRides {
         public Car() {
             position = new Point(0, 0);
             handledRides = new ArrayList<>();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(handledRides.size());
+            handledRides.forEach(c -> builder.append(" ").append(c));
+            return builder.toString();
         }
     }
 
