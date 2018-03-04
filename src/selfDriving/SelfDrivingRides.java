@@ -59,13 +59,14 @@ public class SelfDrivingRides {
     }
 
     public static void main(String... args) {
-        ProblemDataIO dataIO = new ProblemDataIO(new SelfDrivingInputData(), new SelfDrivingOutputData(), "selfDriving", "d_metropolis.in");
+        ProblemDataIO dataIO = new ProblemDataIO(new SelfDrivingInputData(), new SelfDrivingOutputData(),
+                "selfDriving", "e_high_bonus.in");
         SelfDrivingInputData inputData = (SelfDrivingInputData) dataIO.readData();
-        List<Car> cars = assignCarsToRiders(inputData.cars, inputData.rides, inputData.steps);
+        List<Car> cars = assignCarsToRiders(inputData.cars, inputData.rides, inputData.steps, inputData.bonusNumber);
         dataIO.writeData(cars);
     }
 
-    private static List<Car> assignCarsToRiders(List<Car> freeCars, List<Ride> rides, int maxSteps) {
+    private static List<Car> assignCarsToRiders(List<Car> freeCars, List<Ride> rides, int maxSteps, int bonus) {
         List<Car> bookedCars = new ArrayList<>();
 
         for (int step = 0; step < maxSteps; ++step) {
@@ -74,7 +75,7 @@ public class SelfDrivingRides {
             Iterator<Car> carIterator = freeCars.iterator();
             while (carIterator.hasNext()) {     // loop throws all free cars
                 Car freeCar = carIterator.next();
-                Ride carRide = getRideForCar(freeCar, step, rides);   // get most appropriate ride for free car
+                Ride carRide = getRideForCar(freeCar, step, rides, bonus);   // get most appropriate ride for free car
                 if (Objects.nonNull(carRide)) {
                     bookCar(freeCar, carIterator, bookedCars);            // set ride for the car
                     removeExpiredRide(rides, carRide);
@@ -94,9 +95,10 @@ public class SelfDrivingRides {
         return bookedCars;
     }
 
-    private static Ride getRideForCar(Car car, int step, List<Ride> rides) {
+    private static Ride getRideForCar(Car car, int step, List<Ride> rides, int bonus) {
         Ride carRide = null;
-        int bookingTime = Integer.MIN_VALUE;
+        int triger = Integer.MIN_VALUE;
+        int rideBookingTime = 0;
         for (Ride ride : rides) {
             int carRichStartRideTime = getDistance(car.position, ride.startPosition);
             int rideTime = getDistance(ride.startPosition, ride.endPosition);
@@ -104,16 +106,19 @@ public class SelfDrivingRides {
                 continue;
             }
             int waitTime = ride.startTime - (step + carRichStartRideTime);
+            int price = rideTime + (waitTime >= 0 ? bonus : waitTime);
+            int bookingTime = carRichStartRideTime + rideTime + (waitTime >= 0 ? waitTime : 0);
 
-            int currBookingTime = rideTime;
+            int currTriger = price / bookingTime;
 
-            if (bookingTime < currBookingTime) {
-                bookingTime = currBookingTime;
+            if (triger < currTriger) {
+                triger = currTriger;
+                rideBookingTime = bookingTime;
                 carRide = ride;
             }
         }
         if (Objects.nonNull(carRide)) {
-            carRide.actualRideTime = bookingTime;
+            carRide.actualRideTime = rideBookingTime;
         }
         return carRide;
     }
@@ -137,7 +142,7 @@ public class SelfDrivingRides {
     }
 
     private static boolean isCarFree(Car bookCar) {
-        return bookCar.bookingTime == 0;
+        return bookCar.bookingTime <= 0;
     }
 
     private static void removeExpiredRide(List<Ride> rides, Ride carRide) {
