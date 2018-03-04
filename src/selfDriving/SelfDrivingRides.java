@@ -59,7 +59,7 @@ public class SelfDrivingRides {
     }
 
     public static void main(String... args) {
-        ProblemDataIO dataIO = new ProblemDataIO(new SelfDrivingInputData(), new SelfDrivingOutputData(), "selfDriving", "e_high_bonus.in");
+        ProblemDataIO dataIO = new ProblemDataIO(new SelfDrivingInputData(), new SelfDrivingOutputData(), "selfDriving", "d_metropolis.in");
         SelfDrivingInputData inputData = (SelfDrivingInputData) dataIO.readData();
         List<Car> cars = assignCarsToRiders(inputData.cars, inputData.rides, inputData.steps);
         dataIO.writeData(cars);
@@ -96,7 +96,7 @@ public class SelfDrivingRides {
 
     private static Ride getRideForCar(Car car, int step, List<Ride> rides) {
         Ride carRide = null;
-        int bookingTime = Integer.MAX_VALUE;
+        int bookingTime = Integer.MIN_VALUE;
         for (Ride ride : rides) {
             int carRichStartRideTime = getDistance(car.position, ride.startPosition);
             int rideTime = getDistance(ride.startPosition, ride.endPosition);
@@ -105,9 +105,9 @@ public class SelfDrivingRides {
             }
             int waitTime = ride.startTime - (step + carRichStartRideTime);
 
-            int currBookingTime = step + carRichStartRideTime + ((waitTime > 0) ? waitTime : 0) + rideTime;
+            int currBookingTime = rideTime;
 
-            if (bookingTime > currBookingTime) {
+            if (bookingTime < currBookingTime) {
                 bookingTime = currBookingTime;
                 carRide = ride;
             }
