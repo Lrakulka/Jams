@@ -98,7 +98,7 @@ public class SelfDrivingRides {
             long price = rideTime + (waitTime >= 0 ? bonus : waitTime);
             long bookingTime = carRichStartRideTime + rideTime + (waitTime >= 0 ? waitTime : 0);
 
-            long currTriger = price / bookingTime;
+            long currTriger = price;// / bookingTime;
 
             if (triger < currTriger) {
                 triger = currTriger;
