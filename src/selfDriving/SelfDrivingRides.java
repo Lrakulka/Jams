@@ -76,7 +76,7 @@ public class SelfDrivingRides {
                 if (Objects.nonNull(carRide)) {
                     removeExpiredRide(rides, carRide);
                     assignCar(car, carRide);
-                    step += car.bookingTime;
+                    step += car.bookingTime - 1;
                 }
             }
         }
