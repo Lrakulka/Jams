@@ -1,6 +1,8 @@
 package util;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public class ProblemDataIO {
@@ -38,6 +40,19 @@ public class ProblemDataIO {
         return inputData;
     }
 
+    public void writeOutput(List data) {
+        final StringBuilder builder = new StringBuilder();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outURI))) {
+            for (int i = 0; i < data.size(); ++i) {
+                builder.append("Case #").append(i + 1).append(":").append(outputData.getOutput(data.get(i))).append("\n");
+                bw.write(builder.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Deprecated
     public void writeData(Object data) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(outURI))) {
             bw.write(outputData.getOutput(data));
