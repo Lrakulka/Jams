@@ -1,93 +1,69 @@
 package kickstart_round_d_2018;
 
-import util.InputData;
-import util.OutputData;
-import util.ProblemDataIO;
+import wrapper.ProblemExecutor;
+import wrapper.Test;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
-public class Candies {
-    static class Candies_InputData implements InputData {
-        List<Test> tests;
+public class Candies extends ProblemExecutor<Candies.CandiesTest> {
 
-        static class Test {
-            long N;
-            long maxOdd_O;
-            long maxSweetness_D;
-
-            public List<Long> candiesSweetness;
+    private static final Function<Iterator<String>, CandiesTest> READ_CONVERTER = stringIterator -> {
+        String dataLine = stringIterator.next();
+        final CandiesTest candiesTest = new CandiesTest();
+        String[] params = dataLine.split(" ");
+        candiesTest.N = Long.valueOf(params[0]);
+        candiesTest.maxOdd_O = Long.valueOf(params[1]);
+        candiesTest.maxSweetness_D = Long.valueOf(params[2]);
+        dataLine = stringIterator.next();
+        candiesTest.candiesSweetness = new ArrayList<>();
+        params = dataLine.split(" ");
+        long X1 = Long.valueOf(params[0]);
+        long X2 = Long.valueOf(params[1]);
+        long A = Long.valueOf(params[2]);
+        long B = Long.valueOf(params[3]);
+        long C = Long.valueOf(params[4]);
+        long M = Long.valueOf(params[5]);
+        long L = Long.valueOf(params[6]);
+        for (long i = 0; i < candiesTest.N; ++i) {
+            long S = X1 + L;
+            candiesTest.candiesSweetness.add(S);
+            long c = X2;
+            X2 = (A * X2 + B * X1 + C) % M;
+            X1 = c;
         }
+        return candiesTest;
+    };
+    private static final Function<Object, String> WRITE_CONVERTER = o -> Objects.isNull(o) ? "IMPOSSIBLE" : o.toString();
 
-        @Override
-        public void setParams(String[] params) {
-            tests = new ArrayList<>(Integer.valueOf(params[0]));
-        }
+    static class CandiesTest implements Test {
+        long N;
+        long maxOdd_O;
+        long maxSweetness_D;
 
-        private boolean gettingTest;
-        @Override
-        public void fillData(String dataLine) {
-            if (!gettingTest) {
-                Test test = new Test();
-                String[] params = dataLine.split(" ");
-                test.N = Long.valueOf(params[0]);
-                test.maxOdd_O = Long.valueOf(params[1]);
-                test.maxSweetness_D = Long.valueOf(params[2]);
-                tests.add(test);
-                gettingTest = true;
-            } else {
-                Test test = tests.get(tests.size() - 1);
-                test.candiesSweetness = new ArrayList<>();
-                String[] params = dataLine.split(" ");
-                long X1 = Long.valueOf(params[0]);
-                long X2 = Long.valueOf(params[1]);
-                long A = Long.valueOf(params[2]);
-                long B = Long.valueOf(params[3]);
-                long C = Long.valueOf(params[4]);
-                long M = Long.valueOf(params[5]);
-                long L = Long.valueOf(params[6]);
-                for (long i = 0; i < test.N; ++i) {
-                    long S = X1 + L;
-                    test.candiesSweetness.add(S);
-                    long c = X2;
-                    X2 = (A * X2 + B * X1 + C) % M;
-                    X1 = c;
-                }
-                gettingTest = false;
-            }
-        }
-    }
-
-    static class Candies_OutputData implements OutputData {
-
-        @Override
-        public String getOutput(Object data) {
-            if (Objects.isNull(data)) {
-                return "IMPOSSIBLE";
-            } else {
-                return data.toString();
-            }
-        }
+        public List<Long> candiesSweetness;
     }
 
     public static void main(String... args) {
-        String[] inputs = {"A-small-practice.in"};
-        for (String in : inputs) {
-            ProblemDataIO dataIO = new ProblemDataIO(new Candies.Candies_InputData(),
-                    new Candies.Candies_OutputData(),"kickstart_round_d_2018", in);
-            Candies_InputData inputData = (Candies_InputData) dataIO.readData();
-            List<Long> numbs = getAnswers(inputData.tests);
-            dataIO.writeOutput(numbs);
-        }
+        String[] inputs = {"A-large-practice"};
+        new Candies().execute(inputs);
     }
 
-    private static List<Long> getAnswers(List<Candies_InputData.Test> tests) {
-        return tests.stream().map(Candies::getAnswer).collect(Collectors.toList());
+    @Override
+    protected Function<Iterator<String>, CandiesTest> getReadConverter() {
+        return READ_CONVERTER;
     }
 
-    private static Long getAnswer(Candies_InputData.Test test) {
+    @Override
+    protected Function<Object, String> getWriteConverter() {
+        return WRITE_CONVERTER;
+    }
+
+    @Override
+    protected Long getAnswer(CandiesTest test) {
         if (test.maxSweetness_D < -1) {
             return null;
         }
@@ -131,16 +107,4 @@ public class Candies {
         return max_so_far;
     }
 
-    private static boolean isLessOdd(List<Long> candiesSweetness, int start, int end, long oddMaxNumber) {
-        long oddCount = 0;
-        for (long i = start; i <= end; ++i) {
-            if (candiesSweetness.get((int) i) % 2 == 1) {
-                oddCount++;
-            }
-            if (oddCount > oddMaxNumber) {
-                return false;
-            }
-        }
-        return true;
-    }
 }

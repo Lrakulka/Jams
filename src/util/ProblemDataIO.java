@@ -13,7 +13,6 @@ public class ProblemDataIO {
     private final String outURI;
 
     public ProblemDataIO(InputData inputData, OutputData outputData, String packName, String uri) {
-        this.getClass().getPackage();
         this.inURI = "src\\" + packName + "\\in\\" + uri;
         this.outURI = "src\\" + packName + "\\out\\" + uri.substring(0, uri.indexOf('.')) + OUT_SUFFIX;
         this.inputData = inputData;
