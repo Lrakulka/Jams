@@ -1,7 +1,5 @@
 package wrapper;
 
-import kickstart_round_d_2018.Candies;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -15,7 +13,7 @@ public abstract class ProblemExecutor <T extends Test> {
 
     public void execute(final String[] inputs) {
         for (String in : inputs) {
-            JamDataIOHandlerImpl dataIO = new JamDataIOHandlerImpl<>(Candies.class, in,
+            JamDataIOHandlerImpl dataIO = new JamDataIOHandlerImpl<>(this.getClass(), in,
                     getReadConverter(), getWriteConverter()
             );
             List<T> inputData = dataIO.readInput();
