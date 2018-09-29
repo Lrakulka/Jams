@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.function.Function;
 
 public class JamDataIOHandlerImpl<T extends Test> {
-    private static final String OUT_SUFFIX = ".out";
-    private static final String IN_SUFFIX = ".in";
+    static final String OUT_SUFFIX = ".out";
+    static final String IN_SUFFIX = ".in";
 
     private final String inURI;
     private final String outURI;

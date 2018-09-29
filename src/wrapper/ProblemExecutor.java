@@ -18,12 +18,16 @@ public abstract class ProblemExecutor <T extends Test> {
 
     public void execute(final String[] inputs) {
         final LocalTime startTime = LocalTime.now();
+        final TestSourceCreator testSourceCreator = new TestFileCreatorImpl();
 
         for (String in : inputs) {
+            if (testSourceCreator.nonExist(this.getClass(), in)) {
+                testSourceCreator.createSource(this.getClass(), in);
+            }
             final LocalTime startTestTime = LocalTime.now();
             System.out.println(String.format("Start test set \"%s\" time %s", in, startTestTime.toString()));
 
-            JamDataIOHandlerImpl dataIO =
+            JamDataIOHandlerImpl<T> dataIO =
                     new JamDataIOHandlerImpl<>(this.getClass(), in, getReadConverter(), getWriteConverter());
             final List<T> inputData = dataIO.readInput();
             final Stream<T> inputStream = (TEST_SEQ.equals(in)) ? inputData.stream() : inputData.parallelStream();
@@ -36,7 +40,7 @@ public abstract class ProblemExecutor <T extends Test> {
             System.out.println("Test Duration " + Duration.between(LocalTime.now(), startTestTime).toString());
         }
 
-        System.out.println("Total Duration " + Duration.between(LocalTime.now(), startTime).toString());
+        System.out.println("Total tests Duration " + Duration.between(LocalTime.now(), startTime).toString());
     }
 
     private volatile double testNumber;
