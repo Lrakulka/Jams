@@ -47,7 +47,14 @@ public abstract class ProblemExecutor <T extends Test> {
     private AtomicInteger processedTestNumber = new AtomicInteger();
     private volatile int prevPercent = -1;
     private Object processTest(T test) {
-        final Object answer = getAnswer(test);
+        Object answer = null;
+        try {
+            answer = getAnswer(test);
+        } catch (final Exception exc) {
+            System.err.println("Test failed " + test.toString());
+            exc.printStackTrace();
+            System.exit(1);
+        }
 
         final int percent = (int) (processedTestNumber.incrementAndGet() / testNumber * 100);
         if (percent != prevPercent) {
