@@ -40,7 +40,7 @@ public class No_Nine {
     }
 
     public static void main(String... args) {
-        String[] inputs = {"test.in"};
+        String[] inputs = {"Test.in"};
         for (String in : inputs) {
             ProblemDataIO dataIO = new ProblemDataIO(new No_NineInputData(), new No_NineOutputData(),
                     "kickstart_round_b_2018", in);
